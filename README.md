@@ -1,19 +1,10 @@
 # Xard Security Starter
 
-A Spring Boot starter providing JWT authentication and dynamic role-based authorization.
+A lightweight Spring Boot starter for JWT authentication and authorization.
 
-## Features
+## Quick Start
 
-- JWT token authentication
-- Configurable role-based authorization with hierarchy
-- Password validation
-- Custom security annotations
-- CORS configuration
-- Exception handling
-
-## Installation
-
-Add this dependency to your pom.xml:
+Add the dependency to your `pom.xml`:
 
 ```xml
 <dependency>
@@ -23,140 +14,130 @@ Add this dependency to your pom.xml:
 </dependency>
 ```
 
-## Configuration
+### Minimal Setup
 
-Add these properties to your application.yml:
-
+1. Configure `application.yaml`:
 ```yaml
 security:
-  jwt-secret: your-256-bit-secret
-  jwt-expiration: 86400000 # 24 hours
-  allowed-origins:
-    - "*"
-  allowed-methods:
-    - GET
-    - POST
-    - PUT
-    - DELETE
-    - OPTIONS
-  public-paths:
-    - /auth/**
-    - /public/**
-  role-hierarchy:
-    - SUPER_ADMIN  # Highest priority
-    - ADMIN
-    - MANAGER
-    - USER        # Lowest priority
+  jwt-secret: "your-very-secure-secret-key-at-least-32-chars-long"  # Must be at least 256 bits
 ```
 
-## Required Implementations
+2. Create an entity implementing `BaseUserDetails`:
+```java
+@Entity
+public class User implements BaseUserDetails {
+    // Implement required methods
+}
+```
 
-1. Implement UserDetailsService:
+3. Create a repository:
+```java
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+}
+```
 
+4. Create a service implementing `UserDetailsService`:
 ```java
 @Service
-public class YourUserDetailsService implements UserDetailsService {
+public class UserService implements UserDetailsService {
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Your implementation to load user from your database
-        // Must return UserDetails object
+    public UserDetails loadUserByUsername(String username) {
+        // Implement user lookup
     }
 }
 ```
 
-2. Extend BaseAuthenticationService:
+That's it! You now have access to:
+- `/auth/login` endpoint for authentication
+- JWT-based security for all other endpoints
+- Basic role-based authorization
 
-```java
-@Service
-public class YourAuthService extends BaseAuthenticationService {
-    @Override
-    protected AuthResponse buildAuthResponse(UserDetails userDetails, String token) {
-        return AuthResponse.builder()
-                .token(token)
-                .username(userDetails.getUsername())
-                .role(userDetails.getAuthorities().iterator().next().getAuthority())
-                .build();
-    }
-}
-```
+## Available Endpoints
 
-## Using Security Annotations
-
-The starter provides two main security annotations:
-
-1. @HasAnyRole: Requires any of the specified roles
-```java
-@HasAnyRole({"ADMIN", "MANAGER"})
-@GetMapping("/protected")
-public ResponseEntity<?> protectedEndpoint() {
-    // Only accessible by users with ADMIN or MANAGER role
-}
-```
-
-2. @HasRoleOrIsUser: Requires either the specified role or to be the user themselves
-```java
-@HasRoleOrIsUser("MANAGER")
-@GetMapping("/users/{id}")
-public ResponseEntity<?> userEndpoint(@PathVariable Long id) {
-    // Accessible by MANAGER or the user with the specified id
-}
-```
-
-## Authentication Endpoints
-
-The starter automatically provides these endpoints:
-
-```
+### Login
+```http
 POST /auth/login
-```
-Request body:
-```json
+Content-Type: application/json
+
 {
     "username": "user",
     "password": "password"
 }
 ```
 
-Response:
-```json
+### Register (requires additional setup)
+```http
+POST /auth/register
+Content-Type: application/json
+
 {
-    "token": "jwt-token",
-    "username": "user",
-    "role": "ROLE_USER"
+    "username": "newuser",
+    "password": "password",
+    "email": "user@example.com"
 }
 ```
 
-## Password Validation
+## Additional Features (Optional)
 
-The starter includes built-in password validation with these requirements:
-- Minimum 8 characters
-- At least one digit
-- At least one lowercase letter
-- At least one uppercase letter
-- At least one special character (@#$%^&+=)
+### Registration Support
+Implement `UserRegistrationService` to enable user registration:
+```java
+@Service
+public class CustomRegistrationService implements UserRegistrationService {
+    // Implement required methods
+}
+```
+
+### Custom Authorization
+Use provided annotations for role-based access:
+```java
+@HasRole("ADMIN")
+@GetMapping("/admin")
+public ResponseEntity<?> adminOnly() {
+    // Only ADMIN can access
+}
+```
+
+### Configuration Options
+Full configuration in `application.yaml`:
+```yaml
+security:
+  jwt-secret: "your-secure-key"  # Required
+  jwt-expiration: 86400000       # Optional (24 hours default)
+  allowed-origins:               # Optional
+    - http://localhost:4200
+  allowed-methods:               # Optional
+    - GET
+    - POST
+  public-paths:                  # Optional
+    - /auth/**
+    - /public/**
+  role-hierarchy:                # Optional
+    - ADMIN
+    - USER
+```
+
+### Password Requirements
+Default password must contain:
+- At least 8 characters
+- One digit
+- One lowercase letter
+- One uppercase letter
+- One special character (@#$%^&+=)
 - No whitespace
 
-## Error Handling
+## Security Best Practices
 
-The starter automatically handles these exceptions:
-- JWT token errors
-- Authentication errors
-- Authorization errors
-- Validation errors
+1. Use a strong JWT secret key (min 256 bits)
+2. Store sensitive config in environment variables
+3. Use HTTPS in production
+4. Keep dependencies updated
+5. Implement proper password storage (BCrypt)
 
-## Security Headers
+## Contributing
+[Add contribution guidelines]
 
-Automatically configured security headers:
-- CORS (Configurable)
-- XSS Protection
-- Content Security Policy
-- Frame Options
-- HSTS
-
-## Role Hierarchy
-
-Roles defined in the `role-hierarchy` list follow a hierarchical order where roles higher in the list inherit permissions of roles below them. For example, with the default configuration:
-- SUPER_ADMIN can access everything
-- ADMIN can access everything except SUPER_ADMIN endpoints
-- MANAGER can access everything except SUPER_ADMIN and ADMIN endpoints
-- USER has the most restricted access
+## License
+[Add license information]

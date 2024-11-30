@@ -5,10 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.banta.security.dto.AuthRequest;
 import org.banta.security.dto.AuthResponse;
 import org.banta.security.dto.RegisterRequest;
-import org.banta.security.service.BaseAuthenticationService;
+import org.banta.security.service.XardAuthenticationService;
 import org.banta.security.service.RegistrationService;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
-    private final BaseAuthenticationService authenticationService;
+    private final XardAuthenticationService authenticationService;
     private final ObjectProvider<RegistrationService> registrationServiceProvider;
 
     @PostMapping("/login")

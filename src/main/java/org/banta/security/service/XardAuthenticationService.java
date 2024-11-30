@@ -13,10 +13,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public abstract class BaseAuthenticationService {
+public class XardAuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordValidator passwordValidator;
+    private final AuthResponseBuilder authResponseBuilder;
 
     public AuthResponse authenticate(AuthRequest request) {
         Authentication authentication = authenticationManager.authenticate(
@@ -29,7 +30,7 @@ public abstract class BaseAuthenticationService {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String token = jwtService.generateToken(userDetails);
 
-        return buildAuthResponse(userDetails, token);
+        return authResponseBuilder.buildResponse(userDetails, token);
     }
 
     public void validatePassword(String password) {
@@ -37,7 +38,4 @@ public abstract class BaseAuthenticationService {
             throw new SecurityException(passwordValidator.getPasswordRequirements());
         }
     }
-
-    // Applications will implement this to customize the auth response
-    protected abstract AuthResponse buildAuthResponse(UserDetails userDetails, String token);
 }

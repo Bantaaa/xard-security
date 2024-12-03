@@ -16,7 +16,4 @@ public class SecurityProperties {
     private String[] allowedOrigins = {"*"};
     private String[] allowedMethods = {"GET", "POST", "PUT", "DELETE", "OPTIONS"};
     private String[] publicPaths = {"/auth/**", "/public/**"};
-
-    // Role hierarchies from highest to lowest
-    private List<String> roleHierarchy = new ArrayList<>();
 }

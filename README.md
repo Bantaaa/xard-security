@@ -135,9 +135,3 @@ Default password must contain:
 3. Use HTTPS in production
 4. Keep dependencies updated
 5. Implement proper password storage (BCrypt)
-
-## Contributing
-[Add contribution guidelines]
-
-## License
-[Add license information]
